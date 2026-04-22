@@ -58,3 +58,11 @@ type Withdrawal struct {
 	// ProcessedAt — время выполнения операции списания.
 	ProcessedAt time.Time
 }
+
+// Balance представляет текущее состояние счёта пользователя.
+type Balance struct {
+	// Current — текущее количество доступных баллов.
+	Current float64
+	// Withdrawn — суммарное количество списанных баллов за всё время.
+	Withdrawn float64
+}
