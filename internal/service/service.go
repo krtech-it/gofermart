@@ -1,7 +1,10 @@
 // Пакет service содержит бизнес-логику системы лояльности Gophermart.
 package service
 
-import "github.com/krtech-it/gofermart/internal/storage"
+import (
+	"github.com/krtech-it/gofermart/internal/config"
+	"github.com/krtech-it/gofermart/internal/storage"
+)
 
 // Services объединяет все сервисы приложения в одну структуру.
 type Services struct {
@@ -14,9 +17,9 @@ type Services struct {
 }
 
 // NewServices создаёт и возвращает Services с инициализированными зависимостями.
-func NewServices(userStorage storage.UserStorage, orderStorage storage.OrderStorage, withdrawalStorage storage.WithdrawalStorage) *Services {
+func NewServices(userStorage storage.UserStorage, orderStorage storage.OrderStorage, withdrawalStorage storage.WithdrawalStorage, cfg config.Config) *Services {
 	return &Services{
-		User:       NewUserService(userStorage),
+		User:       NewUserService(userStorage, cfg.JWTSecret),
 		Order:      NewOrderService(orderStorage),
 		Withdrawal: NewWithdrawalService(withdrawalStorage),
 	}

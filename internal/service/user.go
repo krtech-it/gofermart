@@ -2,18 +2,29 @@ package service
 
 import (
 	"context"
+	"errors"
+
+	"github.com/google/uuid"
+	"github.com/krtech-it/gofermart/internal/middleware"
+	"github.com/krtech-it/gofermart/internal/model"
 	"github.com/krtech-it/gofermart/internal/storage"
+	"golang.org/x/crypto/bcrypt"
 )
+
+var ErrorLoginAlreadyExists = errors.New("login already exists")
+var ErrorInvalidLoginPassword = errors.New("invalid login password")
 
 // UserService реализует бизнес-логику работы с пользователями.
 type UserService struct {
-	storage storage.UserStorage
+	storage   storage.UserStorage
+	jwtSecret string
 }
 
 // NewUserService создаёт новый UserService с переданным хранилищем.
-func NewUserService(storage storage.UserStorage) UserServiceInterface {
+func NewUserService(storage storage.UserStorage, jwtSecret string) UserServiceInterface {
 	return &UserService{
-		storage: storage,
+		storage:   storage,
+		jwtSecret: jwtSecret,
 	}
 }
 
@@ -27,10 +38,46 @@ type UserServiceInterface interface {
 
 // CreateUser регистрирует нового пользователя и возвращает токен авторизации.
 func (s *UserService) CreateUser(ctx context.Context, login, password string) (string, error) {
-	panic("implement me")
+	user, err := s.storage.GetUserByLogin(ctx, login)
+	if err != nil && !errors.Is(err, storage.ErrNotFound) {
+		return "", err
+	}
+	if user != nil {
+		return "", ErrorLoginAlreadyExists
+	}
+	hashPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	var newUser = model.User{
+		ID:           uuid.New(),
+		Login:        login,
+		PasswordHash: string(hashPassword),
+	}
+	err = s.storage.CreateUser(ctx, &newUser)
+	if err != nil {
+		return "", err
+	}
+	token, err := middleware.GenerateToken(newUser.ID, s.jwtSecret)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }
 
 // Login аутентифицирует пользователя и возвращает токен авторизации.
 func (s *UserService) Login(ctx context.Context, login, password string) (string, error) {
-	panic("implement me")
+	user, err := s.storage.GetUserByLogin(ctx, login)
+	if err != nil {
+		return "", ErrorInvalidLoginPassword
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+	if err != nil {
+		return "", ErrorInvalidLoginPassword
+	}
+	token, err := middleware.GenerateToken(user.ID, s.jwtSecret)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }

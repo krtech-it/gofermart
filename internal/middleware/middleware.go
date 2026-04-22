@@ -11,11 +11,12 @@ import (
 
 func AuthMiddleware(cfg config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenString := c.Request.Header.Get("Authorization")
-		if tokenString == "" {
+		token, err := c.Request.Cookie("Authorization")
+		if err != nil {
 			c.AbortWithStatus(401)
 			return
 		}
+		tokenString := token.Value
 		userID, err := checkAuthToken(tokenString, cfg.JWTSecret)
 		if err != nil {
 			c.AbortWithStatus(401)
