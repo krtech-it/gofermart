@@ -7,6 +7,8 @@ import (
 	"os"
 )
 
+const JwtKey = "secret_jwt_key"
+
 // Config хранит конфигурацию приложения.
 type Config struct {
 	// RunAddress — адрес host:port, на котором слушает HTTP-сервер (env: RUN_ADDRESS, флаг: -a).
@@ -15,6 +17,7 @@ type Config struct {
 	DatabaseURI string
 	// AccrualSystemAddress — базовый URL внешнего сервиса начислений (env: ACCRUAL_SYSTEM_ADDRESS, флаг: -r).
 	AccrualSystemAddress string
+	JWTSecret            string
 }
 
 // Load собирает Config из флагов CLI с переопределением через переменные окружения
@@ -32,6 +35,7 @@ func Load() (Config, error) {
 		RunAddress:           runAddress,
 		DatabaseURI:          databaseURI,
 		AccrualSystemAddress: accrualSystemAddress,
+		JWTSecret:            getEnv("JWT_SECRET", JwtKey),
 	}, nil
 }
 
