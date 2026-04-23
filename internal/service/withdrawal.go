@@ -46,7 +46,7 @@ func (s *WithdrawalService) WithdrawalProcess(ctx context.Context, userID uuid.U
 	if balance.Current < sum {
 		return ErrorBalanceInsufficientFunds
 	}
-	_, err = s.storage.CreateWithdrawal(ctx, userID, orderNumber, sum)
+	err = s.storage.CreateWithdrawal(ctx, userID, orderNumber, sum)
 	return err
 }
 

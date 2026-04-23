@@ -61,7 +61,7 @@ func (s *OrderService) UploadOrder(ctx context.Context, userID uuid.UUID, orderN
 		UserId: userID,
 		Status: model.OrderStatusNew,
 	}
-	orderNew, err = s.storage.CreateOrder(ctx, orderNew)
+	err = s.storage.CreateOrder(ctx, orderNew)
 	return err
 }
 
