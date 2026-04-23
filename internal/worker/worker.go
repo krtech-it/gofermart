@@ -58,7 +58,12 @@ func (w *Worker) processOrders(ctx context.Context) {
 			continue
 		}
 		order.Accrual = &resp.Accrual
-		order.Status = model.OrderStatus(resp.Status)
+		switch resp.Status {
+		case "REGISTERED":
+			order.Status = model.OrderStatusProcessing
+		default:
+			order.Status = model.OrderStatus(resp.Status)
+		}
 		err = w.storage.UpdateOrder(ctx, order)
 		if err != nil {
 			w.logger.Error("processOrders: ошибка обновления заказа", zap.String("order", order.Number), zap.Error(err))
