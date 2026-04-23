@@ -27,7 +27,7 @@ func main() {
 	}
 	db, err := storage.NewPostgresStorage(cfg.DatabaseURI)
 	if err != nil {
-		customLogger.Error("failed to connect to database", zap.Error(err))
+		customLogger.Fatal("failed to connect to database", zap.Error(err))
 	}
 	err = db.Migrate("file://./migrations")
 	if err != nil {
@@ -36,11 +36,11 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 	accrualClient := accrual.NewClient(cfg.AccrualSystemAddress, customLogger)
-	w := worker.NewWorker(db, accrualClient)
+	w := worker.NewWorker(db, accrualClient, customLogger)
 	go w.Start(ctx)
 
-	services := service.NewServices(db, db, db, cfg)
-	handlers := handler.NewHandler(services)
+	services := service.NewServices(db, db, db, cfg, customLogger)
+	handlers := handler.NewHandler(services, customLogger)
 	router := http.NewRouter(handlers, cfg)
 	err = router.Run(cfg.RunAddress)
 	if err != nil {
