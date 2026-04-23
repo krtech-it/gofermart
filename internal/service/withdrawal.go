@@ -2,10 +2,13 @@ package service
 
 import (
 	"context"
+	"errors"
 	"github.com/google/uuid"
 	"github.com/krtech-it/gofermart/internal/model"
 	"github.com/krtech-it/gofermart/internal/storage"
 )
+
+var ErrorBalanceInsufficientFunds = errors.New("balance insufficient funds")
 
 // WithdrawalService реализует бизнес-логику работы со списаниями баллов.
 type WithdrawalService struct {
@@ -25,23 +28,34 @@ type WithdrawalServiceInterface interface {
 	// Возвращает ошибку, если баланса недостаточно.
 	WithdrawalProcess(ctx context.Context, userID uuid.UUID, orderNumber string, sum float64) error
 	// GetWithdrawals возвращает все операции списания пользователя, отсортированные от новых к старым.
-	GetWithdrawals(ctx context.Context, userID uuid.UUID) ([]model.Withdrawal, error)
+	GetWithdrawals(ctx context.Context, userID uuid.UUID) ([]*model.Withdrawal, error)
 	// GetBalance возвращает текущий баланс и суммарное количество списанных баллов пользователя.
-	GetBalance(ctx context.Context, userID uuid.UUID) (model.Balance, error)
+	GetBalance(ctx context.Context, userID uuid.UUID) (*model.Balance, error)
 }
 
 // WithdrawalProcess выполняет списание баллов в счёт указанного заказа.
 // Возвращает ошибку, если баланса недостаточно.
 func (s *WithdrawalService) WithdrawalProcess(ctx context.Context, userID uuid.UUID, orderNumber string, sum float64) error {
-	panic("implement me")
+	if !isValidLuhn(orderNumber) {
+		return ErrorInvalidOrderNumber
+	}
+	balance, err := s.storage.GetBalance(ctx, userID)
+	if err != nil {
+		return err
+	}
+	if balance.Current < sum {
+		return ErrorBalanceInsufficientFunds
+	}
+	_, err = s.storage.CreateWithdrawal(ctx, userID, orderNumber, sum)
+	return err
 }
 
 // GetWithdrawals возвращает все операции списания пользователя, отсортированные от новых к старым.
-func (s *WithdrawalService) GetWithdrawals(ctx context.Context, userID uuid.UUID) ([]model.Withdrawal, error) {
-	panic("implement me")
+func (s *WithdrawalService) GetWithdrawals(ctx context.Context, userID uuid.UUID) ([]*model.Withdrawal, error) {
+	return s.storage.GetAllWithdrawalsByUserID(ctx, userID)
 }
 
 // GetBalance возвращает текущий баланс и суммарное количество списанных баллов пользователя.
-func (s *WithdrawalService) GetBalance(ctx context.Context, userID uuid.UUID) (model.Balance, error) {
-	panic("implement me")
+func (s *WithdrawalService) GetBalance(ctx context.Context, userID uuid.UUID) (*model.Balance, error) {
+	return s.storage.GetBalance(ctx, userID)
 }
