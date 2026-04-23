@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/krtech-it/gofermart/internal/model"
 	"github.com/krtech-it/gofermart/internal/storage"
+	"go.uber.org/zap"
 )
 
 var ErrOrderAlreadyByOtherUser = errors.New("order already uploaded by another user")
@@ -16,12 +17,14 @@ var ErrorInvalidOrderNumber = errors.New("invalid order number")
 // OrderService реализует бизнес-логику работы с заказами.
 type OrderService struct {
 	storage storage.OrderStorage
+	logger  *zap.Logger
 }
 
-// NewOrderService создаёт новый OrderService с переданным хранилищем.
-func NewOrderService(storage storage.OrderStorage) OrderServiceInterface {
+// NewOrderService создаёт новый OrderService с переданным хранилищем и логгером.
+func NewOrderService(storage storage.OrderStorage, logger *zap.Logger) OrderServiceInterface {
 	return &OrderService{
 		storage: storage,
+		logger:  logger,
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"go.uber.org/zap"
 	"io"
 	"net/http"
 	"strconv"
@@ -25,14 +26,16 @@ type AccrualResponse struct {
 type Client struct {
 	baseURL    string
 	httpClient *http.Client
+	logger     *zap.Logger
 }
 
-func NewClient(baseURL string) *Client {
+func NewClient(baseURL string, logger *zap.Logger) *Client {
 	return &Client{
 		baseURL: baseURL,
 		httpClient: &http.Client{
 			Timeout: time.Second * 5,
 		},
+		logger: logger,
 	}
 }
 
@@ -47,6 +50,7 @@ func (c *Client) GetOrderAccrual(ctx context.Context, orderNumber string) (*Accr
 		return nil, err
 	}
 	defer resp.Body.Close()
+	c.logger.Debug("GetOrderAccrual", zap.String("status", resp.Status))
 	switch resp.StatusCode {
 	case 200:
 		response := &AccrualResponse{}

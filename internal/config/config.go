@@ -18,6 +18,7 @@ type Config struct {
 	// AccrualSystemAddress — базовый URL внешнего сервиса начислений (env: ACCRUAL_SYSTEM_ADDRESS, флаг: -r).
 	AccrualSystemAddress string
 	JWTSecret            string
+	LogLevel             string
 }
 
 // Load собирает Config из флагов CLI с переопределением через переменные окружения
@@ -36,6 +37,7 @@ func Load() (Config, error) {
 		DatabaseURI:          databaseURI,
 		AccrualSystemAddress: accrualSystemAddress,
 		JWTSecret:            getEnv("JWT_SECRET", JwtKey),
+		LogLevel:             getEnv("LOG_LEVEL", "info"),
 	}, nil
 }
 

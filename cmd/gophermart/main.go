@@ -6,9 +6,11 @@ import (
 	"github.com/krtech-it/gofermart/internal/config"
 	"github.com/krtech-it/gofermart/internal/delivery/http"
 	"github.com/krtech-it/gofermart/internal/handler"
+	"github.com/krtech-it/gofermart/internal/logger"
 	"github.com/krtech-it/gofermart/internal/service"
 	"github.com/krtech-it/gofermart/internal/storage"
 	"github.com/krtech-it/gofermart/internal/worker"
+	"go.uber.org/zap"
 	"log"
 	"os"
 	"os/signal"
@@ -19,9 +21,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	db, err := storage.NewPostgresStorage(cfg.DatabaseURI)
+	customLogger, err := logger.Initialize(cfg.LogLevel)
 	if err != nil {
 		log.Fatal(err)
+	}
+	db, err := storage.NewPostgresStorage(cfg.DatabaseURI)
+	if err != nil {
+		customLogger.Error("failed to connect to database", zap.Error(err))
 	}
 	err = db.Migrate("file://./migrations")
 	if err != nil {
@@ -29,7 +35,7 @@ func main() {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
-	accrualClient := accrual.NewClient(cfg.AccrualSystemAddress)
+	accrualClient := accrual.NewClient(cfg.AccrualSystemAddress, customLogger)
 	w := worker.NewWorker(db, accrualClient)
 	go w.Start(ctx)
 

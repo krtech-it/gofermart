@@ -8,6 +8,7 @@ import (
 	"github.com/krtech-it/gofermart/internal/middleware"
 	"github.com/krtech-it/gofermart/internal/model"
 	"github.com/krtech-it/gofermart/internal/storage"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -18,13 +19,15 @@ var ErrorInvalidLoginPassword = errors.New("invalid login password")
 type UserService struct {
 	storage   storage.UserStorage
 	jwtSecret string
+	logger    *zap.Logger
 }
 
-// NewUserService создаёт новый UserService с переданным хранилищем.
-func NewUserService(storage storage.UserStorage, jwtSecret string) UserServiceInterface {
+// NewUserService создаёт новый UserService с переданным хранилищем и логгером.
+func NewUserService(storage storage.UserStorage, jwtSecret string, logger *zap.Logger) UserServiceInterface {
 	return &UserService{
 		storage:   storage,
 		jwtSecret: jwtSecret,
+		logger:    logger,
 	}
 }
 
