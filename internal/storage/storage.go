@@ -11,4 +11,4 @@ type PostgresStorage struct {
 	db *sql.DB
 }
 
-var ErrNotFound = errors.New("user not found")
+var ErrNotFound = errors.New("object not found")
