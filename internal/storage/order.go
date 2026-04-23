@@ -19,7 +19,8 @@ type OrderStorage interface {
 	// CreateOrder сохраняет новый заказ и возвращает его с заполненными полями.
 	CreateOrder(ctx context.Context, order *model.Order) error
 	// UpdateOrder обновляет статус и начисление заказа и возвращает обновлённую запись.
-	UpdateOrder(ctx context.Context, order *model.Order) (*model.Order, error)
+	UpdateOrder(ctx context.Context, order *model.Order) error
+	GetAllOpenOrders(ctx context.Context) ([]*model.Order, error)
 }
 
 // GetAllOrdersByUserID возвращает все заказы пользователя, отсортированные от новых к старым.
@@ -77,6 +78,31 @@ func (p *PostgresStorage) CreateOrder(ctx context.Context, order *model.Order) e
 }
 
 // UpdateOrder обновляет статус и начисление заказа и возвращает обновлённую запись.
-func (p *PostgresStorage) UpdateOrder(ctx context.Context, order *model.Order) (*model.Order, error) {
-	panic("implement me")
+func (p *PostgresStorage) UpdateOrder(ctx context.Context, order *model.Order) error {
+	_, err := p.db.ExecContext(ctx, "update orders set status = $1, accrual = $2 where number = $3", order.Status, order.Accrual, order.Number)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *PostgresStorage) GetAllOpenOrders(ctx context.Context) ([]*model.Order, error) {
+	ordersDB := make([]*model.Order, 0)
+	rows, err := p.db.QueryContext(ctx, "select number, user_id, status from orders where status in ($1 , $2)", model.OrderStatusNew, model.OrderStatusProcessing)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var order = &model.Order{}
+		err := rows.Scan(&order.Number, &order.UserId, &order.Status)
+		if err != nil {
+			return nil, err
+		}
+		ordersDB = append(ordersDB, order)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return ordersDB, nil
 }
