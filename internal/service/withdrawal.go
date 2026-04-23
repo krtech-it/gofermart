@@ -3,9 +3,11 @@ package service
 import (
 	"context"
 	"errors"
+
 	"github.com/google/uuid"
 	"github.com/krtech-it/gofermart/internal/model"
 	"github.com/krtech-it/gofermart/internal/storage"
+	"go.uber.org/zap"
 )
 
 var ErrorBalanceInsufficientFunds = errors.New("balance insufficient funds")
@@ -13,12 +15,14 @@ var ErrorBalanceInsufficientFunds = errors.New("balance insufficient funds")
 // WithdrawalService реализует бизнес-логику работы со списаниями баллов.
 type WithdrawalService struct {
 	storage storage.WithdrawalStorage
+	logger  *zap.Logger
 }
 
-// NewWithdrawalService создаёт новый WithdrawalService с переданным хранилищем.
-func NewWithdrawalService(storage storage.WithdrawalStorage) WithdrawalServiceInterface {
+// NewWithdrawalService создаёт новый WithdrawalService с переданным хранилищем и логгером.
+func NewWithdrawalService(storage storage.WithdrawalStorage, logger *zap.Logger) WithdrawalServiceInterface {
 	return &WithdrawalService{
 		storage: storage,
+		logger:  logger,
 	}
 }
 
