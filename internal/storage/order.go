@@ -88,7 +88,7 @@ func (p *PostgresStorage) UpdateOrder(ctx context.Context, order *model.Order) e
 
 func (p *PostgresStorage) GetAllOpenOrders(ctx context.Context) ([]*model.Order, error) {
 	ordersDB := make([]*model.Order, 0)
-	rows, err := p.db.QueryContext(ctx, "select number, user_id, status from orders where status in ($1 , $2)", model.OrderStatusNew, model.OrderStatusProcessing)
+	rows, err := p.db.QueryContext(ctx, "select number, user_id, status from orders where status in ('NEW', 'PROCESSING')")
 	if err != nil {
 		return nil, err
 	}

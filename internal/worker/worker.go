@@ -23,7 +23,10 @@ func NewWorker(storage storage.OrderStorage, accrual *accrual.Client, logger *za
 	return &Worker{storage: storage, accrual: accrual, logger: logger}
 }
 
+// Start запускает воркер: сразу обрабатывает заказы, затем повторяет по тикеру каждые 5 секунд.
+// Останавливается при отмене контекста.
 func (w *Worker) Start(ctx context.Context) {
+	w.processOrders(ctx)
 	t := time.NewTicker(5 * time.Second)
 	defer t.Stop()
 	for {
