@@ -71,8 +71,8 @@ func TestLoad_ReturnsValidConfig(t *testing.T) {
 	if cfg.DatabaseURI != "postgres://localhost/test" {
 		t.Errorf("DatabaseURI: ожидалось %q, получено %q", "postgres://localhost/test", cfg.DatabaseURI)
 	}
-	if cfg.AccrualSystemAddress != "localhost:9000" {
-		t.Errorf("AccrualSystemAddress: ожидалось %q, получено %q", "localhost:9000", cfg.AccrualSystemAddress)
+	if cfg.AccrualSystemAddress != "http://localhost:9000" {
+		t.Errorf("AccrualSystemAddress: ожидалось %q, получено %q", "http://localhost:9000", cfg.AccrualSystemAddress)
 	}
 	if cfg.JWTSecret != "supersecret" {
 		t.Errorf("JWTSecret: ожидалось %q, получено %q", "supersecret", cfg.JWTSecret)

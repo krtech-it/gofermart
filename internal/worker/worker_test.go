@@ -6,7 +6,6 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -39,8 +38,7 @@ func (m *mockOrderStorage) CreateOrder(ctx context.Context, order *model.Order) 
 
 // newTestWorker создаёт Worker с мок-хранилищем и accrual-клиентом на тестовый сервер.
 func newTestWorker(storage *mockOrderStorage, server *httptest.Server) *Worker {
-	hostPort := strings.TrimPrefix(server.URL, "http://")
-	client := accrual.NewClient(hostPort, zap.NewNop())
+	client := accrual.NewClient(server.URL, zap.NewNop())
 	return NewWorker(storage, client, zap.NewNop())
 }
 
@@ -220,8 +218,7 @@ func TestProcessOrders_RateLimit_Returns(t *testing.T) {
 		{Number: "79927398713", Status: model.OrderStatusNew},
 		{Number: "79927398713", Status: model.OrderStatusNew},
 	}
-	hostPort := strings.TrimPrefix(server.URL, "http://")
-	client := accrual.NewClient(hostPort, zap.NewNop())
+	client := accrual.NewClient(server.URL, zap.NewNop())
 	wkr := &Worker{
 		storage: &mockOrderStorage{
 			getAllOpenOrders: func(_ context.Context) ([]*model.Order, error) {

@@ -6,18 +6,14 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"go.uber.org/zap"
 )
 
 // newTestClient создаёт Client, направленный на тестовый HTTP-сервер.
-// baseURL передаётся без схемы, так как Client сам добавляет "http://".
 func newTestClient(server *httptest.Server) *Client {
-	// server.URL вида "http://127.0.0.1:PORT" — берём только host:port.
-	hostPort := strings.TrimPrefix(server.URL, "http://")
-	return NewClient(hostPort, zap.NewNop())
+	return NewClient(server.URL, zap.NewNop())
 }
 
 // --- GetOrderAccrual ---

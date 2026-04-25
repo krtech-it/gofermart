@@ -5,6 +5,7 @@ package config
 import (
 	"net"
 	"os"
+	"strings"
 )
 
 const JwtKey = "secret_jwt_key"
@@ -35,7 +36,7 @@ func Load() (Config, error) {
 	return Config{
 		RunAddress:           runAddress,
 		DatabaseURI:          databaseURI,
-		AccrualSystemAddress: accrualSystemAddress,
+		AccrualSystemAddress: ensureHTTPScheme(accrualSystemAddress),
 		JWTSecret:            getEnv("JWT_SECRET", JwtKey),
 		LogLevel:             getEnv("LOG_LEVEL", "info"),
 	}, nil
@@ -51,4 +52,11 @@ func getEnv(key, fallback string) string {
 func checkHostPortAddr(addr string) error {
 	_, _, err := net.SplitHostPort(addr)
 	return err
+}
+
+func ensureHTTPScheme(addr string) string {
+	if addr == "" || strings.HasPrefix(addr, "http://") || strings.HasPrefix(addr, "https://") {
+		return addr
+	}
+	return "http://" + addr
 }

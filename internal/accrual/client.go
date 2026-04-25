@@ -40,7 +40,7 @@ func NewClient(baseURL string, logger *zap.Logger) *Client {
 }
 
 func (c *Client) GetOrderAccrual(ctx context.Context, orderNumber string) (*AccrualResponse, error) {
-	url := fmt.Sprintf("http://%s/api/orders/%s", c.baseURL, orderNumber)
+	url := fmt.Sprintf("%s/api/orders/%s", c.baseURL, orderNumber)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
